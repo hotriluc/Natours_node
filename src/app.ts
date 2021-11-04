@@ -14,7 +14,7 @@ app.use(
     next();
   },
   (req: Request, res: Response, next: NextFunction) => {
-    req['requestDate'] = new Date().toString();
+    req['requestDate'] = new Date().toISOString();
     next();
   },
 );
@@ -26,7 +26,12 @@ const tours = JSON.parse(
     .toString(),
 );
 
+const users = JSON.parse(
+  fs.readFileSync('dev-data/data/users.json').toString(),
+);
+
 const getAllTours = (req: Request, res: Response) => {
+  console.log(users);
   res.status(200).json({
     date: req['requestDate'],
     message: 'success',
@@ -99,7 +104,7 @@ const deleteTour = (req: Request, res: Response) => {
   }
 };
 
-const addTour = (req: Request, res: Response) => {
+const createTour = (req: Request, res: Response) => {
   let tourId = tours[tours.length - 1].id + 1;
   let tour = Object.assign({ id: tourId }, req.body);
   tours.push(tour);
@@ -112,13 +117,62 @@ const addTour = (req: Request, res: Response) => {
   );
 };
 
+const getAllUsers = (req: Request, res: Response) => {
+  res.status(200).json({
+    date: req['requestDate'],
+    message: 'success',
+    data: { users: users },
+  });
+};
+
+const getUser = (req: Request, res: Response) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'The endpoint is not defined',
+  });
+};
+
+const updateUser = (req: Request, res: Response) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'The endpoint is not defined',
+  });
+};
+
+const deleteUser = (req: Request, res: Response) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'The endpoint is not defined',
+  });
+};
+
+const createUser = (req: Request, res: Response) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'The endpoint is not defined',
+  });
+};
+
+//ROUTES
+const tourRouter = express.Router();
+tourRouter.route('/').get(getAllTours).post(createTour);
+tourRouter
+  .route('/:id')
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+
+const userRouter = express.Router();
+userRouter.route('/').get(getAllUsers).post(createUser);
+userRouter
+  .route('/:id')
+  .get(getUser)
+  .patch(updateUser)
+  .delete(deleteUser);
+
 app
-  .get('/api/v1/tours', getAllTours)
-  .post('/api/v1/tours', addTour);
-app
-  .get('/api/v1/tours/:id', getTour)
-  .patch('/api/v1/tours/:id', updateTour)
-  .delete('/api/v1/tours/:id', deleteTour);
+  .use('/api/v1/tours', tourRouter)
+  .use('/api/v1/users', userRouter);
 
 app.listen(port, () => {
   console.log('This server is running on port ' + port);
